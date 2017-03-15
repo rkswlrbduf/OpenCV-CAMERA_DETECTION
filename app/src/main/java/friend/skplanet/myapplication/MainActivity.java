@@ -19,6 +19,8 @@ import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.imgproc.Imgproc;
+
 import android.os.Message;
 import android.widget.ImageView;
 
@@ -32,7 +34,12 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
     private static final String TAG = "opencv"; // TAG = opencv
     private CameraBridgeViewBase mOpenCvCameraView; // Define CameraBridgeViewBase
 
-    public native int convertNativeLib(long matAddrInput, long matAddrResult); // native-lib 에서 사용되는 함수이름과 매개변수 long형 matAddrInput과 long형 matAddrResult
+    public static native long loadCascade(String cascadeFileName );
+    public static native void detect(long cascadeClassifier_face, long cascadeClassifier_eye, long matAddrInput, long matAddrResult);
+    public long cascadeClassifier_face = 0;
+    public long cascadeClassifier_eye = 0;
+
+    //public native int convertNativeLib(long matAddrInput, long matAddrResult); // native-lib 에서 사용되는 함수이름과 매개변수 long형 matAddrInput과 long형 matAddrResult
 
     static final int PERMISSION_REQUEST_CODE = 1; // set PERMISSION_REQUEST_CODE to 1
     String[] PERMISSIONS  = {"android.permission.CAMERA"}; // PERMISSIONS = android.permission.CAMERA
@@ -184,6 +191,8 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
     @Override
     public void onCameraViewStarted(int width, int height) {
 
+        img_result = new Mat(height,width,CvType.CV_8UC4);
+
     }
 
     // camera preview 정지시 실행된다.
@@ -200,10 +209,16 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
         {
             img_input = inputFrame.rgba();
 
-            if ( img_result != null ) img_result.release();
-            img_result = new Mat( inputFrame.rgba().rows(), inputFrame.rgba().cols(), CvType.CV_8UC1);
+            Imgproc.Canny(img_input,img_result,50,150);
 
-            convertNativeLib(img_input.getNativeObjAddr(), img_result.getNativeObjAddr());
+            /*Core.flip(img_input, img_input, 1);
+            img_result = new Mat();*/
+
+            /*if ( img_result != null ) img_result.release();
+            img_result = new Mat( inputFrame.rgba().rows(), inputFrame.rgba().cols(), CvType.CV_8UC1);
+*/
+            //detect(cascadeClassifier_face,cascadeClassifier_eye, img_input.getNativeObjAddr(), img_result.getNativeObjAddr());
+            //convertNativeLib(img_input.getNativeObjAddr(), img_result.getNativeObjAddr());
         }
 
         new Thread() {

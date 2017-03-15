@@ -3,7 +3,11 @@
 # value of 3.4.0 or lower.
 
 set(pathOpenCv C:/OpenCV-android-sdk)
-set(pathProject C:/Users/SH501/MyApplication4)
+
+#규열
+set(pathProject C:/Users/kyuyeol/Downloads/OpenCV-CAMERA)
+#학교용
+#set(pathProject C:/Users/SH501/MyApplication4)
 
 cmake_minimum_required(VERSION 3.4.1)
 
