@@ -206,40 +206,22 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
             convertNativeLib(img_input.getNativeObjAddr(), img_result.getNativeObjAddr());
         }
 
-        new Thread()
-
-        {
-
-            public void run()
-
-            {
-
+        new Thread() {
+            public void run() {
                 Message msg = handler.obtainMessage();
-
                 handler.sendMessage(msg);
-
             }
-
         }.start();
 
         return img_result;
     }
 
-    final Handler handler = new Handler()
-
-    {
-
-        public void handleMessage(Message msg)
-
-        {
-
+    final Handler handler = new Handler() {
+        public void handleMessage(Message msg) {
             Bitmap bmp = Bitmap.createBitmap(img_result.cols(), img_result.rows(),
                     Bitmap.Config.ARGB_8888);
             Utils.matToBitmap(img_result, bmp);
             DrawArea.setImageBitmap(bmp);
-
         }
-
     };
-
 }
