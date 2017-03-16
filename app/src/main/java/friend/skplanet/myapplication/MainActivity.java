@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -19,6 +20,8 @@ import org.opencv.android.Utils;
 import org.opencv.core.Core;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
+import org.opencv.core.Scalar;
+import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
 import android.os.Message;
@@ -34,8 +37,8 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
     private static final String TAG = "opencv"; // TAG = opencv
     private CameraBridgeViewBase mOpenCvCameraView; // Define CameraBridgeViewBase
 
-    public static native long loadCascade(String cascadeFileName );
-    public static native void detect(long cascadeClassifier_face, long cascadeClassifier_eye, long matAddrInput, long matAddrResult);
+    //public static native long loadCascade(String cascadeFileName );
+    //public static native void detect(long cascadeClassifier_face, long cascadeClassifier_eye, long matAddrInput, long matAddrResult);
     public long cascadeClassifier_face = 0;
     public long cascadeClassifier_eye = 0;
 
@@ -191,8 +194,6 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
     @Override
     public void onCameraViewStarted(int width, int height) {
 
-        img_result = new Mat(height,width,CvType.CV_8UC4);
-
     }
 
     // camera preview 정지시 실행된다.
@@ -209,7 +210,37 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
         {
             img_input = inputFrame.rgba();
 
-            Imgproc.Canny(img_input,img_result,50,150);
+            Bitmap imageBmp = Bitmap.createBitmap(img_input.cols(), img_input.rows(),Bitmap.Config.ARGB_8888);
+
+            Mat imgSource = new Mat(), imgCirclesOut = new Mat();
+
+            //grey opencv
+            Imgproc.cvtColor(img_input, img_input, Imgproc.COLOR_BGR2GRAY);
+
+            Imgproc.GaussianBlur( img_input, img_input, new Size(9, 9), 2, 2 );
+            Imgproc.HoughCircles( img_input, imgCirclesOut, Imgproc.CV_HOUGH_GRADIENT, 1, img_input.rows()/8, 200, 100, 0, 0 );
+
+            float circle[] = new float[3];
+
+            for (int i = 0; i < imgCirclesOut.cols(); i++)
+            {
+                imgCirclesOut.get(0, i, circle);
+                org.opencv.core.Point center = new org.opencv.core.Point();
+                center.x = circle[0];
+                center.y = circle[1];
+                Imgproc.circle(img_input, center, (int) circle[2], new Scalar(255,0,0,255), 4);
+            }
+
+            Bitmap bmp = Bitmap.createBitmap(imageBmp.getWidth(), imageBmp.getHeight(), Bitmap.Config.ARGB_8888);
+
+            Utils.matToBitmap(imgCirclesOut, bmp);
+
+
+            ImageView frame = (ImageView) findViewById(R.id.imageview);
+
+            //Bitmap bmp = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+            frame.setImageBitmap(bmp);
+
 
             /*Core.flip(img_input, img_input, 1);
             img_result = new Mat();*/
@@ -228,7 +259,7 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
             }
         }.start();
 
-        return img_result;
+        return inputFrame.rgba();
     }
 
     final Handler handler = new Handler() {
