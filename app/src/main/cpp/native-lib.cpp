@@ -80,11 +80,13 @@ extern "C" {
 
 JNIEXPORT jint JNICALL
 Java_friend_skplanet_myapplication_MainActivity_detect(JNIEnv *, jobject,
-                                                                        jlong addrRgba,
-                                                                        jlong addrGray) {
+                                                                        jlong addrRgba/*,
+                                                                        jlong addrGray*/) {
 
     Mat& img = *(Mat*)addrRgba;
-    Mat& gray = *(Mat*)addrGray;
+    //Mat& gray = *(Mat*)addrGray;
+
+    Mat gray = Mat(img.rows,img.cols,CV_8UC1);
 
     cvtColor(img, gray, CV_BGR2GRAY);
     // smooth it, otherwise a lot of false circles may be detected
@@ -101,6 +103,8 @@ Java_friend_skplanet_myapplication_MainActivity_detect(JNIEnv *, jobject,
         // draw the circle outline
         circle( img, center, radius, Scalar(0,0,255), 3, 8, 0 );
     }
+
+    gray.release();
 
     circles.erase(circles.begin(), circles.end());
 

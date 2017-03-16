@@ -42,7 +42,8 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
     //public static native long loadCascade(String cascadeFileName );
     //public static native void detect(long cascadeClassifier_face, long cascadeClassifier_eye, long matAddrInput, long matAddrResult);
 
-    public static native int detect(long matAddrRgba, long matAddrGray);
+    //public static native int detect(long matAddrRgba, long matAddrGray);
+    public static native int detect(long matAddrRgba);
     public long cascadeClassifier_face = 0;
     public long cascadeClassifier_eye = 0;
 
@@ -98,7 +99,6 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
     @Override
     public void onRequestPermissionsResult(int permsRequestCode, String[] permissions, int[] grantResults){
         switch(permsRequestCode){
-
             case PERMISSION_REQUEST_CODE:
                 if (grantResults.length > 0) {
                     boolean camreaAccepted = grantResults[0] == PackageManager.PERMISSION_GRANTED;
@@ -161,6 +161,7 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE); //SurfaceView의 일반 View 와 다른점은 일반 View는 한번 표출되면 생성된 모습 그대로이지만 SurfaceView는 화면의 변화가 실시간이다.
         mOpenCvCameraView.setCvCameraViewListener(this);
         mOpenCvCameraView.setCameraIndex(0); // front-camera(1),  back-camera(0)
+        mOpenCvCameraView.setMaxFrameSize(640,480);
         mLoaderCallback.onManagerConnected(LoaderCallbackInterface.SUCCESS); // openCV 시작
     }
 
@@ -200,6 +201,8 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
 
     }
 
+
+
     // camera preview 정지시 실행된다.
     @Override
     public void onCameraViewStopped() {
@@ -210,16 +213,20 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
 
-        Mat imgSource = new Mat();
 
         if (inputFrame.rgba() != null) // inputFrame 포맷 형식이 rgba인지 확인한다.
         {
+            if(img_input != null) {
+                Log.d(TAG,"memory release");
+                img_input.release();
+            }
             img_input = inputFrame.rgba();
 
-            if(imgSource != null) imgSource.release();
-            imgSource = new Mat(inputFrame.rgba().rows(), inputFrame.rgba().cols(), CvType.CV_8UC1);
+            //if(img_result != null) img_result.release();
+            //img_result = new Mat(img_input.rows(), img_input.cols(), CvType.CV_8UC1);
 
-            detect(img_input.getNativeObjAddr(), imgSource.getNativeObjAddr());
+            //detect(img_input.getNativeObjAddr(), img_result.getNativeObjAddr());
+            detect(img_input.getNativeObjAddr());
 
 /*            Bitmap imageBmp = Bitmap.createBitmap(img_input.rows(), img_input.cols(),Bitmap.Config.ARGB_8888);
 
@@ -258,9 +265,9 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
 
     final Handler handler = new Handler() {
         public void handleMessage(Message msg) {
-            Bitmap bmp = Bitmap.createBitmap(img_result.rows(), img_result.cols(),
+            Bitmap bmp = Bitmap.createBitmap(img_input.rows(), img_input.cols(),
                     Bitmap.Config.ARGB_8888);
-            Utils.matToBitmap(img_result, bmp);
+            Utils.matToBitmap(img_input, bmp);
             DrawArea.setImageBitmap(bmp);
         }
     };
