@@ -27,6 +27,8 @@ import org.opencv.imgproc.Imgproc;
 import android.os.Message;
 import android.widget.ImageView;
 
+import java.util.Vector;
+
 
 public class MainActivity extends Activity implements CameraBridgeViewBase.CvCameraViewListener2 {
 
@@ -39,6 +41,8 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
 
     //public static native long loadCascade(String cascadeFileName );
     //public static native void detect(long cascadeClassifier_face, long cascadeClassifier_eye, long matAddrInput, long matAddrResult);
+
+    public static native int detect(long matAddrRgba, long matAddrGray);
     public long cascadeClassifier_face = 0;
     public long cascadeClassifier_eye = 0;
 
@@ -206,19 +210,26 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
     @Override
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
 
+        Mat imgSource = new Mat();
+
         if (inputFrame.rgba() != null) // inputFrame 포맷 형식이 rgba인지 확인한다.
         {
             img_input = inputFrame.rgba();
 
-            Bitmap imageBmp = Bitmap.createBitmap(img_input.cols(), img_input.rows(),Bitmap.Config.ARGB_8888);
+            if(imgSource != null) imgSource.release();
+            imgSource = new Mat(inputFrame.rgba().rows(), inputFrame.rgba().cols(), CvType.CV_8UC1);
 
-            Mat imgSource = new Mat(), imgCirclesOut = new Mat();
+            detect(img_input.getNativeObjAddr(), imgSource.getNativeObjAddr());
 
-            //grey opencv
-            Imgproc.cvtColor(img_input, img_input, Imgproc.COLOR_BGR2GRAY);
+/*            Bitmap imageBmp = Bitmap.createBitmap(img_input.rows(), img_input.cols(),Bitmap.Config.ARGB_8888);
 
-            Imgproc.GaussianBlur( img_input, img_input, new Size(9, 9), 2, 2 );
-            Imgproc.HoughCircles( img_input, imgCirclesOut, Imgproc.CV_HOUGH_GRADIENT, 1, img_input.rows()/8, 200, 100, 0, 0 );
+            imgCirclesOut = new Mat(inputFrame.rgba().rows(), inputFrame.rgba().cols(),CvType.CV_8UC1);
+
+            Imgproc.cvtColor(img_input, imgSource, Imgproc.COLOR_BGR2GRAY);
+
+            Imgproc.GaussianBlur( imgSource, imgSource, new Size(9, 9), 2, 2 );
+
+            Imgproc.HoughCircles( imgSource, imgCirclesOut, Imgproc.CV_HOUGH_GRADIENT, 1, imgSource.rows()/8, 200, 100, 0, 0 );
 
             float circle[] = new float[3];
 
@@ -228,43 +239,26 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
                 org.opencv.core.Point center = new org.opencv.core.Point();
                 center.x = circle[0];
                 center.y = circle[1];
-                Imgproc.circle(img_input, center, (int) circle[2], new Scalar(255,0,0,255), 4);
+                Imgproc.circle(imgSource, center, (int) circle[2], new Scalar(255,0,0,255), 4);
             }
 
-            Bitmap bmp = Bitmap.createBitmap(imageBmp.getWidth(), imageBmp.getHeight(), Bitmap.Config.ARGB_8888);
-
-            Utils.matToBitmap(imgCirclesOut, bmp);
-
-
-            ImageView frame = (ImageView) findViewById(R.id.imageview);
-
-            //Bitmap bmp = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
-            frame.setImageBitmap(bmp);
-
-
-            /*Core.flip(img_input, img_input, 1);
-            img_result = new Mat();*/
-
-            /*if ( img_result != null ) img_result.release();
-            img_result = new Mat( inputFrame.rgba().rows(), inputFrame.rgba().cols(), CvType.CV_8UC1);
-*/
-            //detect(cascadeClassifier_face,cascadeClassifier_eye, img_input.getNativeObjAddr(), img_result.getNativeObjAddr());
-            //convertNativeLib(img_input.getNativeObjAddr(), img_result.getNativeObjAddr());
-        }
-
+        }*/
+/*
         new Thread() {
             public void run() {
                 Message msg = handler.obtainMessage();
                 handler.sendMessage(msg);
             }
-        }.start();
+        }.start();*/
 
-        return inputFrame.rgba();
+        }
+
+        return img_input;
     }
 
     final Handler handler = new Handler() {
         public void handleMessage(Message msg) {
-            Bitmap bmp = Bitmap.createBitmap(img_result.cols(), img_result.rows(),
+            Bitmap bmp = Bitmap.createBitmap(img_result.rows(), img_result.cols(),
                     Bitmap.Config.ARGB_8888);
             Utils.matToBitmap(img_result, bmp);
             DrawArea.setImageBitmap(bmp);

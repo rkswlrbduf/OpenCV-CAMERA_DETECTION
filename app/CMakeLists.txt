@@ -5,9 +5,9 @@
 set(pathOpenCv C:/OpenCV-android-sdk)
 
 #규열_노트북
-set(pathProject C:/Users/yumin/AndroidStudioProjects/OpenCV-CAMERA)
+#set(pathProject C:/Users/yumin/AndroidStudioProjects/OpenCV-CAMERA)
 #규열
-#set(pathProject C:/Users/kyuyeol/Downloads/OpenCV-CAMERA)
+set(pathProject C:/Users/kyuyeol/Downloads/OpenCV-CAMERA)
 #학교용
 #set(pathProject C:/Users/SH501/MyApplication4)
 
